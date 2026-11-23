@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HASMAM INTERNATIONAL LIMITED TRANSPORT AND HAULAGE KYC App - Logistics & Driver Verification</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf for downloading PDF / ID card -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-id-card-container, #printable-id-card-container * {
+                visibility: visible;
+            }
+            #printable-id-card-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        
+        .id-card-gradient {
+            background: linear-gradient(135deg, #14532d 0%, #166534 50%, #0f172a 100%);
+        }
+        
+        .watermark {
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 10px, transparent 0, transparent 50px);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between">
+
+    <!-- Promo Top Banner -->
+    <div class="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-700 text-white py-2.5 px-4 text-xs sm:text-sm font-medium shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left">
+            <div class="flex items-center gap-2">
+                <span class="bg-yellow-400 text-slate-950 text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 rounded-full tracking-wider shadow">SPECIAL OFFER</span>
+                <span>Get <strong>HASMAM INTERNATIONAL LIMITED TRANSPORT AND HAULAGE KYC App</strong> — 6 Months Access: <strong>₦235,000</strong> | Lifetime Access: <strong>₦620,000</strong></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="openPromoModal()" class="bg-slate-900 hover:bg-slate-800 text-emerald-400 hover:text-emerald-300 font-semibold px-3 py-1 rounded-md text-xs transition border border-emerald-500/30">
+                    <i class="fa-solid fa-share-nodes mr-1"></i> Social Media Post
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700/60 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-900/40">
+                    <i class="fa-solid fa-truck-fast"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold text-white tracking-tight leading-tight">
+                        HASMAM INTERNATIONAL LIMITED TRANSPORT AND HAULAGE <span class="text-emerald-400">KYC App</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">National Driver & Logistics Fleet Verification Portal</p>
+                </div>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <span id="save-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-700/80 text-slate-300 border border-slate-600">
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-[10px]"></i> Autosaved
+                </span>
+                <button onclick="switchTab('dashboard')" id="btn-tab-dashboard" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-slate-700 hover:bg-slate-600 text-white flex items-center gap-1.5">
+                    <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                    <span class="hidden md:inline">Verification</span> Dashboard
+                </button>
+                <button onclick="switchTab('form')" id="btn-tab-form" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow-md shadow-emerald-900/30">
+                    <i class="fa-solid fa-id-card"></i>
+                    <span class="hidden md:inline">Register / Update</span> KYC
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        
+        <!-- ALERT MESSAGE CONTAINER -->
+        <div id="alert-box" class="hidden mb-6 p-4 rounded-xl border flex items-center justify-between transition-all">
+            <div class="flex items-center gap-3">
+                <i id="alert-icon" class="text-xl"></i>
+                <span id="alert-message" class="text-sm font-medium"></span>
+            </div>
+            <button onclick="hideAlert()" class="text-slate-400 hover:text-white text-lg px-2">&times;</button>
+        </div>
+
+        <!-- VIEW 1: KYC FORM -->
+        <section id="view-form" class="space-y-8">
+            <!-- Progress / Intro Header -->
+            <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-700/50 mb-2">
+                        <i class="fa-solid fa-shield-halved"></i> Official Verification Standard
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Driver & Transporter KYC Registration</h2>
+                    <p class="text-sm text-slate-400 mt-1">Complete the verification form for HASMAM INTERNATIONAL LIMITED TRANSPORT AND HAULAGE KYC App compliance.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="resetFormState()" class="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-700/60 hover:bg-slate-700 rounded-lg transition border border-slate-600/50">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Clear Saved Draft
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <form id="kyc-form" onsubmit="handleFormSubmit(event)" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Left 2 Columns: Personal & Vehicle Details -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- Section: Personal Information -->
+                    <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-xl space-y-4">
+                        <h3 class="text-lg font-semibold text-emerald-400 border-b border-slate-700/80 pb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-user"></i> 1. Personal & Identity Information
+                        </h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Full Name (First, Middle, Surname) *</label>
+                                <input type="text" id="fullName" name="fullName" required placeholder="e.g. Chukwuma Ibrahim Adebayo" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Phone Number (WhatsApp Enabled) *</label>
+                                <input type="tel" id="phoneNumber" name="phoneNumber" required placeholder="+234 800 000 0000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">National Identity Number (NIN) *</label>
+                                <input type="text" id="ninNumber" name="ninNumber" required maxlength="11" placeholder="11-digit NIN Number" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Driver's License Number *</label>
+                                <input type="text" id="driversLicense" name="driversLicense" required placeholder="e.g. ABC1234567890" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Residential Address in Nigeria *</label>
+                                <input type="text" id="address" name="address" required placeholder="Street address, City, State" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Vehicle & Fleet Details -->
+                    <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-xl space-y-4">
+                        <h3 class="text-lg font-semibold text-emerald-400 border-b border-slate-700/80 pb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-truck"></i> 2. Vehicle & Fleet Information
+                        </h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Haulage Company / Employer</label>
+                                <input type="text" id="companyName" name="companyName" placeholder="e.g. Dangote Logistics / Independent" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Truck / Vehicle Type *</label>
+                                <select id="vehicleType" name="vehicleType" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                                    <option value="">Select Category</option>
+                                    <option value="Heavy Duty Truck (33T-45T)">Heavy Duty Truck (33T-45T Flatbed/Tanker)</option>
+                                    <option value="Medium Duty Truck (10T-15T)">Medium Duty Truck (10T-15T Rigid)</option>
+                                    <option value="Light Commercial Van (3.5T-5T)">Light Commercial Van / Mini-Truck</option>
+                                    <option value="Container Carrier">Container Carrier (20ft / 40ft)</option>
+                                    <option value="Cold Chain Trailer">Cold Chain / Refrigerated Trailer</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Vehicle Registration Plate No. *</label>
+                                <input type="text" id="plateNumber" name="plateNumber" required placeholder="e.g. LSR-892-XY" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Primary Transport Route *</label>
+                                <input type="text" id="primaryRoute" name="primaryRoute" required placeholder="e.g. Lagos - Kano Corridor / Port Harcourt" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Emergency Contact -->
+                    <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-xl space-y-4">
+                        <h3 class="text-lg font-semibold text-emerald-400 border-b border-slate-700/80 pb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-phone-volume"></i> 3. Guarantor / Next of Kin
+                        </h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Guarantor / Kin Name *</label>
+                                <input type="text" id="guarantorName" name="guarantorName" required placeholder="Full Name of Guarantor" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Guarantor Phone Number *</label>
+                                <input type="tel" id="guarantorPhone" name="guarantorPhone" required placeholder="+234 800 000 0000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right 1 Column: Biometric Photo Capture & Action -->
+                <div class="space-y-6">
+                    
+                    <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-xl space-y-4">
+                        <h3 class="text-lg font-semibold text-emerald-400 border-b border-slate-700/80 pb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-camera"></i> Facial Verification
+                        </h3>
+                        <p class="text-xs text-slate-400">Capture a clear passport headshot using live camera or upload photo file.</p>
+
+                        <!-- Camera / Photo Preview Container -->
+                        <div class="relative w-full aspect-square bg-slate-900 rounded-xl border-2 border-dashed border-slate-700 overflow-hidden flex flex-col items-center justify-center group">
+                            
+                            <!-- Live Video Stream -->
+                            <video id="webcam-video" autoplay playsinline class="hidden w-full h-full object-cover"></video>
+
+                            <!-- Captured / Uploaded Image View -->
+                            <img id="captured-image" class="hidden w-full h-full object-cover" alt="Driver Passport Photo">
+
+                            <!-- Placeholder State -->
+                            <div id="camera-placeholder" class="text-center p-4">
+                                <i class="fa-solid fa-user-gear text-4xl text-slate-600 mb-2"></i>
+                                <p class="text-xs text-slate-400">No passport photo captured</p>
+                            </div>
+
+                            <!-- Live Camera Overlay Badge -->
+                            <div id="camera-live-badge" class="hidden absolute top-3 left-3 bg-red-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                                <span class="w-2 h-2 rounded-full bg-white"></span> LIVE CAMERA
+                            </div>
+                        </div>
+
+                        <!-- Camera Action Buttons -->
+                        <div class="space-y-2 pt-2">
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="startCamera()" id="btn-start-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-video"></i> Open Camera
+                                </button>
+                                <button type="button" onclick="capturePhoto()" id="btn-snap-photo" disabled class="w-full bg-emerald-600 disabled:bg-slate-800 text-white text-xs font-medium py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 disabled:text-slate-600">
+                                    <i class="fa-solid fa-circle-dot"></i> Snap Photo
+                                </button>
+                            </div>
+
+                            <!-- Upload Fallback -->
+                            <div class="relative flex py-1 items-center">
+                                <div class="flex-grow border-t border-slate-700"></div>
+                                <span class="flex-shrink mx-2 text-[10px] uppercase font-semibold text-slate-500">OR UPLOAD</span>
+                                <div class="flex-grow border-t border-slate-700"></div>
+                            </div>
+
+                            <label class="w-full bg-slate-900 hover:bg-slate-950 text-slate-300 hover:text-white border border-slate-700 text-xs font-medium py-2.5 px-3 rounded-xl cursor-pointer transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-upload text-emerald-400"></i>
+                                <span>Upload Passport File</span>
+                                <input type="file" id="file-photo-input" accept="image/*" onchange="handleFileUpload(event)" class="hidden">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Submission Action -->
+                    <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-xl space-y-3">
+                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-900/40 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-id-badge text-lg"></i>
+                            <span>Verify & Generate ID Card</span>
+                        </button>
+                        <p class="text-[11px] text-slate-400 text-center">
+                            By submitting, you certify that all driver credentials adhere to Help KYC App compliance guidelines.
+                        </p>
+                    </div>
+
+                </div>
+
+            </form>
+        </section>
+
+        <!-- VIEW 2: LOGISTICS ID CARD PREVIEW & PRINT -->
+        <section id="view-idcard" class="hidden space-y-6 max-w-2xl mx-auto">
+            <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-xl text-center space-y-2">
+                <span class="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
+                    VERIFICATION SUCCESSFUL
+                </span>
+                <h2 class="text-2xl font-bold text-white">Haulage Driver Logistics Pass</h2>
+                <p class="text-xs text-slate-400">Verified official logistics ID card generated by HASMAM INTERNATIONAL LIMITED TRANSPORT AND HAULAGE KYC App.</p>
+            </div>
+
+            <!-- PRINTABLE CARD WRAPPER -->
+            <div id="printable-id-card-container" class="flex justify-center">
+                <!-- Digital ID Card Outer -->
+                <div id="digital-id-card" class="w-full max-w-md id-card-gradient text-white rounded-2xl border-2 border-emerald-500/40 shadow-2xl overflow-hidden relative watermark p-6 flex flex-col justify-between min-h-[480px]">
+                    
+                    <!-- ID Top Header -->
+                    <div class="flex items-center justify-between border-b border-emerald-500/30 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-black text-lg">
+                                <i class="fa-solid fa-truck-fast"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-extrabold tracking-wider uppercase text-emerald-300">HASMAM INTERNATIONAL LIMITED TRANSPORT AND HAULAGE</h3>
+                                <p class="text-[9px] text-slate-300 font-semibold tracking-widest uppercase">Verified Transporter Pass</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded">
+                                VERIFIED
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- ID Card Body -->
+                    <div class="grid grid-cols-3 gap-4 my-4 items-center">
+                        <!-- Passport Photo -->
+                        <div class="col-span-1">
+                            <div class="w-28 h-32 rounded-xl bg-slate-900 border-2 border-emerald-400/60 overflow-hidden shadow-lg relative">
+                                <img id="id-card-photo" src="https://placehold.co/300x400/1e293b/ffffff?text=Driver+Photo" class="w-full h-full object-cover" alt="Verified Driver">
+                                <div class="absolute bottom-0 inset-x-0 bg-emerald-950/90 text-[8px] text-center text-emerald-300 py-0.5 font-mono">
+                                    SECURE-KYC
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Driver Info Details -->
+                        <div class="col-span-2 space-y-2 text-xs">
+                            <div>
+                                <span class="text-[10px] text-emerald-300/80 uppercase tracking-wider block">Driver Name</span>
+                                <p id="id-card-name" class="font-bold text-sm text-white tracking-wide">DR. CHUKWUMA ADEBAYO</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <span class="text-[9px] text-emerald-300/80 uppercase tracking-wider block">ID Ref. Number</span>
+                                    <p id="id-card-idno" class="font-mono text-slate-200 font-semibold">NHP-8921-2026</p>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] text-emerald-300/80 uppercase tracking-wider block">Plate Number</span>
+                                    <p id="id-card-plate" class="font-mono text-emerald-400 font-bold">LSR-892-XY</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <span class="text-[9px] text-emerald-300/80 uppercase tracking-wider block">Vehicle Category</span>
+                                <p id="id-card-vehicle" class="text-slate-200 font-medium text-[11px]">Heavy Duty Truck (33T)</p>
+                            </div>
+
+                            <div>
+                                <span class="text-[9px] text-emerald-300/80 uppercase tracking-wider block">NIN Reference</span>
+                                <p id="id-card-nin" class="font-mono text-slate-300 text-[11px]">12345678901</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Primary Route Banner -->
+                    <div class="bg-slate-950/60 border border-emerald-500/20 rounded-xl p-2.5 text-xs">
+                        <div class="flex justify-between items-center text-[10px] text-slate-400">
+                            <span>PRIMARY HAULAGE CORRIDOR</span>
+                            <span id="id-card-issue-date" class="font-mono text-emerald-400">ISS: OCT 2026</span>
+                        </div>
+                        <p id="id-card-route" class="font-semibold text-emerald-200 truncate mt-0.5">Lagos - Port Harcourt Corridor</p>
+                    </div>
+
+                    <!-- Footer Verification & QR code simulation -->
+                    <div class="flex items-center justify-between border-t border-emerald-500/20 pt-3 mt-2 text-[10px] text-slate-400">
+                        <div class="space-y-0.5">
+                            <p class="text-slate-300 font-medium">HASMAM INTERNATIONAL LIMITED TRANSPORT AND HAULAGE Security Network</p>
+                            <p class="text-[9px]">Emergency Contact: <span id="id-card-phone" class="text-slate-200 font-mono">+234 800 000 000</span></p>
+                        </div>
+                        
+                        <!-- Simulated QR Code -->
+                        <div class="w-10 h-10 bg-white p-1 rounded border border-emerald-400/40 flex items-center justify-center">
+                            <i class="fa-solid fa-qrcode text-slate-950 text-2xl"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-4 no-print">
+                <button onclick="downloadIDCardPDF()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30">
+                    <i class="fa-solid fa-file-pdf"></i> Download PDF Pass
+                </button>
+                <button onclick="window.print()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-print"></i> Print ID Card
+                </button>
+                <button onclick="switchTab('form')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                </button>
+            </div>
+        </section>
+
+        <!-- VIEW 3: VERIFICATION RECORDS DASHBOARD -->
+        <section id="view-dashboard" class="hidden space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-xl">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Verification Records Dashboard</h2>
+                    <p class="text-xs text-slate-400 mt-1">Manage driver records registered through HASMAM INTERNATIONAL LIMITED TRANSPORT AND HAULAGE KYC App.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="bg-emerald-950 text-emerald-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-800">
+                        Total Registered: <span id="record-count">0</span>
+                    </span>
+                    <button onclick="clearAllDashboardRecords()" class="bg-red-950/60 hover:bg-red-900 text-red-300 text-xs font-medium px-3 py-1.5 rounded-lg border border-red-800/50 transition">
+                        <i class="fa-solid fa-trash-can mr-1"></i> Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table of Drivers -->
+            <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl shadow-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900/80 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-700">
+                            <tr>
+                                <th class="p-4">Driver</th>
+                                <th class="p-4">Plate No</th>
+                                <th class="p-4">Vehicle Category</th>
+                                <th class="p-4">Route</th>
+                                <th class="p-4">Guarantor</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="records-table-body" class="divide-y divide-slate-700/50">
+                            <!-- JS populated rows -->
+                            <tr>
+                                <td colspan="7" class="p-8 text-center text-slate-500">
+                                    No driver records available. Complete a registration form to view data here.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SOCIAL MEDIA POST MODAL -->
+    <div id="promo-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
+            <button onclick="closePromoModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">&times;</button>
+            
+            <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <i class="fa-solid fa-bullhorn"></i> Ready-to-Post Social Media Content
+            </div>
+
+            <h3 class="text-xl font-bold text-white">Promote HASMAM INTERNATIONAL LIMITED TRANSPORT AND HAULAGE KYC App</h3>
+            <p class="text-xs text-slate-400">Copy this post content directly to share on WhatsApp, LinkedIn, Facebook, or X (Twitter).</p>
+
+            <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 text-xs font-mono text-slate-200 space-y-3 relative">
+                <div id="social-post-text" class="whitespace-pre-line">
+🚛 HASMAM INTERNATIONAL LIMITED TRANSPORT AND HAULAGEKYC APP 🇳🇬
+*The #1 Digital Fleet Verification & Driver KYC Platform for Nigerian Logistics*
+
+Ensure 100% haulage security, verify drivers instantly, and issue verifiable digital logistics ID cards!
+
+💡 Key Features:
+✅ Live Biometric Camera & Document Capture
+✅ Driver NIN & License Verification
+✅ Offline Auto-Saving Drafts
+✅ Instant Printable Logistics Pass & PDF Cards
+✅ Centralized Fleet Records Dashboard
+
+💰 Special Launch Pricing:
+• 6-Month Access: ₦235,000
+• Lifetime Access: ₦620,000
+
+Get your fleet fully compliant and secured today! 
+📲 Contact us to activate your license now.
+                </div>
+            </div>
+
+            <div class="flex gap-2 justify-end">
+                <button onclick="copySocialPost()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-copy"></i> Copy Post Text
+                </button>
+                <button onclick="closePromoModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold px-4 py-2.5 rounded-xl transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <p>&copy; 2026 Nigerian Haulage Pro KYC App. All rights reserved.</p>
+            <p class="flex items-center gap-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                Official Nigerian Haulage Verification Standard
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State Management
+        const STORAGE_KEY_DRAFT = "NHP_KYC_DRAFT_V1";
+        const STORAGE_KEY_RECORDS = "NHP_KYC_RECORDS_V1";
+
+        let mediaStream = null;
+        let capturedPhotoData = null;
+
+        // On Page Load
+        window.onload = function () {
+            loadSavedDraft();
+            updateDashboardTable();
+            setupFormAutosave();
+        };
+
+        // Navigation Tabs Switch
+        function switchTab(tabName) {
+            document.getElementById('view-form').classList.add('hidden');
+            document.getElementById('view-idcard').classList.add('hidden');
+            document.getElementById('view-dashboard').classList.add('hidden');
+
+            if (tabName === 'form') {
+                document.getElementById('view-form').classList.remove('hidden');
+            } else if (tabName === 'idcard') {
+                document.getElementById('view-idcard').classList.remove('hidden');
+            } else if (tabName === 'dashboard') {
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                updateDashboardTable();
+            }
+        }
+
+        // Camera Management
+        async function startCamera() {
+            const video = document.getElementById('webcam-video');
+            const placeholder = document.getElementById('camera-placeholder');
+            const liveBadge = document.getElementById('camera-live-badge');
+            const capturedImg = document.getElementById('captured-image');
+            const snapBtn = document.getElementById('btn-snap-photo');
+
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
+                    audio: false
+                });
+                video.srcObject = mediaStream;
+                video.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                capturedImg.classList.add('hidden');
+                liveBadge.classList.remove('hidden');
+                snapBtn.disabled = false;
+                showAlert('success', 'Camera initialized successfully.');
+            } catch (err) {
+                console.error("Camera access error:", err);
+                showAlert('error', 'Unable to access camera. Please use the file upload option.');
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('webcam-video');
+            const capturedImg = document.getElementById('captured-image');
+            const liveBadge = document.getElementById('camera-live-badge');
+
+            if (!mediaStream) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 400;
+            canvas.height = video.videoHeight || 400;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            capturedPhotoData = canvas.toDataURL('image/jpeg');
+            capturedImg.src = capturedPhotoData;
+            capturedImg.classList.remove('hidden');
+            video.classList.add('hidden');
+            liveBadge.classList.add('hidden');
+
+            // Stop Camera Track
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+
+            document.getElementById('btn-snap-photo').disabled = true;
+            saveDraftToStorage();
+            showAlert('success', 'Passport photo captured successfully.');
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                capturedPhotoData = event.target.result;
+                const capturedImg = document.getElementById('captured-image');
+                const placeholder = document.getElementById('camera-placeholder');
+                const video = document.getElementById('webcam-video');
+
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+
+                video.classList.add('hidden');
+                placeholder.classList.add('hidden');
+                capturedImg.src = capturedPhotoData;
+                capturedImg.classList.remove('hidden');
+
+                saveDraftToStorage();
+                showAlert('success', 'Passport photo uploaded.');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Live Auto-Save State
+        function setupFormAutosave() {
+            const inputs = document.querySelectorAll('#kyc-form input, #kyc-form select');
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    saveDraftToStorage();
+                });
+            });
+        }
+
+        function getFormData() {
+            return {
+                fullName: document.getElementById('fullName').value.trim(),
+                phoneNumber: document.getElementById('phoneNumber').value.trim(),
+                ninNumber: document.getElementById('ninNumber').value.trim(),
+                driversLicense: document.getElementById('driversLicense').value.trim(),
+                address: document.getElementById('address').value.trim(),
+                companyName: document.getElementById('companyName').value.trim(),
+                vehicleType: document.getElementById('vehicleType').value,
+                plateNumber: document.getElementById('plateNumber').value.trim(),
+                primaryRoute: document.getElementById('primaryRoute').value.trim(),
+                guarantorName: document.getElementById('guarantorName').value.trim(),
+                guarantorPhone: document.getElementById('guarantorPhone').value.trim(),
+                photoData: capturedPhotoData
+            };
+        }
+
+        function saveDraftToStorage() {
+            const data = getFormData();
+            localStorage.setItem(STORAGE_KEY_DRAFT, JSON.stringify(data));
+            const badge = document.getElementById('save-status-badge');
+            badge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-[10px]"></i> Saved`;
+        }
+
+        function loadSavedDraft() {
+            const saved = localStorage.getItem(STORAGE_KEY_DRAFT);
+            if (!saved) return;
+
+            try {
+                const data = JSON.parse(saved);
+                if (data.fullName) document.getElementById('fullName').value = data.fullName;
+                if (data.phoneNumber) document.getElementById('phoneNumber').value = data.phoneNumber;
+                if (data.ninNumber) document.getElementById('ninNumber').value = data.ninNumber;
+                if (data.driversLicense) document.getElementById('driversLicense').value = data.driversLicense;
+                if (data.address) document.getElementById('address').value = data.address;
+                if (data.companyName) document.getElementById('companyName').value = data.companyName;
+                if (data.vehicleType) document.getElementById('vehicleType').value = data.vehicleType;
+                if (data.plateNumber) document.getElementById('plateNumber').value = data.plateNumber;
+                if (data.primaryRoute) document.getElementById('primaryRoute').value = data.primaryRoute;
+                if (data.guarantorName) document.getElementById('guarantorName').value = data.guarantorName;
+                if (data.guarantorPhone) document.getElementById('guarantorPhone').value = data.guarantorPhone;
+
+                if (data.photoData) {
+                    capturedPhotoData = data.photoData;
+                    const capturedImg = document.getElementById('captured-image');
+                    const placeholder = document.getElementById('camera-placeholder');
+                    capturedImg.src = capturedPhotoData;
+                    capturedImg.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                }
+            } catch (err) {
+                console.error("Failed to parse saved draft:", err);
+            }
+        }
+
+        function resetFormState() {
+            localStorage.removeItem(STORAGE_KEY_DRAFT);
+            document.getElementById('kyc-form').reset();
+            capturedPhotoData = null;
+            document.getElementById('captured-image').classList.add('hidden');
+            document.getElementById('camera-placeholder').classList.remove('hidden');
+            showAlert('info', 'Form draft cleared.');
+        }
+
+        // Form Submit Handler
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const data = getFormData();
+
+            if (!data.photoData) {
+                showAlert('error', 'Please capture or upload a passport photo before generating ID card.');
+                return;
+            }
+
+            // Populate Printable ID Card
+            document.getElementById('id-card-name').textContent = data.fullName.toUpperCase();
+            document.getElementById('id-card-plate').textContent = data.plateNumber.toUpperCase();
+            document.getElementById('id-card-vehicle').textContent = data.vehicleType;
+            document.getElementById('id-card-nin').textContent = data.ninNumber;
+            document.getElementById('id-card-route').textContent = data.primaryRoute;
+            document.getElementById('id-card-phone').textContent = data.guarantorPhone;
+            document.getElementById('id-card-photo').src = data.photoData;
+
+            // Generate Random NHP Ref Code
+            const refCode = "NHP-" + Math.floor(1000 + Math.random() * 9000) + "-2026";
+            document.getElementById('id-card-idno').textContent = refCode;
+
+            // Save Record to Dashboard List
+            saveRecordToDashboard({ ...data, refCode, date: new Date().toLocaleDateString() });
+
+            // Switch to ID View
+            switchTab('idcard');
+            showAlert('success', 'Driver KYC successfully verified!');
+        }
+
+        // Records Management
+        function saveRecordToDashboard(record) {
+            let records = [];
+            const existing = localStorage.getItem(STORAGE_KEY_RECORDS);
+            if (existing) {
+                try { records = JSON.parse(existing); } catch (e) {}
+            }
+            records.unshift(record);
+            localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(records));
+        }
+
+        function updateDashboardTable() {
+            const tbody = document.getElementById('records-table-body');
+            const countBadge = document.getElementById('record-count');
+            const existing = localStorage.getItem(STORAGE_KEY_RECORDS);
+            let records = [];
+
+            if (existing) {
+                try { records = JSON.parse(existing); } catch (e) {}
+            }
+
+            countBadge.textContent = records.length;
+
+            if (records.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="p-8 text-center text-slate-500">
+                            No driver records available. Complete a registration form to view data here.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = records.map((rec, index) => `
+                <tr class="hover:bg-slate-700/30 transition">
+                    <td class="p-4 font-semibold text-white flex items-center gap-2">
+                        <img src="${rec.photoData || 'https://placehold.co/100'}" class="w-8 h-8 rounded-full object-cover border border-emerald-500">
+                        <div>
+                            <div>${rec.fullName}</div>
+                            <div class="text-[10px] font-mono text-slate-400">${rec.refCode || 'NHP-PASS'}</div>
+                        </div>
+                    </td>
+                    <td class="p-4 font-mono font-bold text-emerald-400">${rec.plateNumber}</td>
+                    <td class="p-4 text-slate-300">${rec.vehicleType}</td>
+                    <td class="p-4 text-slate-300 max-w-[150px] truncate">${rec.primaryRoute}</td>
+                    <td class="p-4 text-slate-300">${rec.guarantorName}<br><span class="text-[10px] text-slate-400">${rec.guarantorPhone}</span></td>
+                    <td class="p-4">
+                        <span class="bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">
+                            VERIFIED
+                        </span>
+                    </td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteRecord(${index})" class="text-slate-400 hover:text-red-400 transition p-1">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteRecord(index) {
+            let records = JSON.parse(localStorage.getItem(STORAGE_KEY_RECORDS) || "[]");
+            records.splice(index, 1);
+            localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(records));
+            updateDashboardTable();
+            showAlert('info', 'Record removed.');
+        }
+
+        function clearAllDashboardRecords() {
+            if (confirm("Are you sure you want to clear all verification records?")) {
+                localStorage.removeItem(STORAGE_KEY_RECORDS);
+                updateDashboardTable();
+                showAlert('info', 'All records cleared.');
+            }
+        }
+
+        // PDF Generation
+        function downloadIDCardPDF() {
+            const element = document.getElementById('printable-id-card-container');
+            const opt = {
+                margin:       0.2,
+                filename:     'Nigerian_Haulage_Pro_ID_Card.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Promo Modal Controls
+        function openPromoModal() {
+            document.getElementById('promo-modal').classList.remove('hidden');
+        }
+
+        function closePromoModal() {
+            document.getElementById('promo-modal').classList.add('hidden');
+        }
+
+        function copySocialPost() {
+            const text = document.getElementById('social-post-text').innerText;
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = text;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempTextArea);
+            showAlert('success', 'Social media post copied to clipboard!');
+        }
+
+        // Alert Banner Display
+        function showAlert(type, message) {
+            const alertBox = document.getElementById('alert-box');
+            const alertIcon = document.getElementById('alert-icon');
+            const alertMsg = document.getElementById('alert-message');
+
+            alertBox.classList.remove('hidden', 'bg-emerald-950/80', 'border-emerald-700', 'text-emerald-200', 'bg-red-950/80', 'border-red-700', 'text-red-200', 'bg-blue-950/80', 'border-blue-700', 'text-blue-200');
+
+            if (type === 'success') {
+                alertBox.classList.add('bg-emerald-950/80', 'border-emerald-700', 'text-emerald-200');
+                alertIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-xl';
+            } else if (type === 'error') {
+                alertBox.classList.add('bg-red-950/80', 'border-red-700', 'text-red-200');
+                alertIcon.className = 'fa-solid fa-triangle-exclamation text-red-400 text-xl';
+            } else {
+                alertBox.classList.add('bg-blue-950/80', 'border-blue-700', 'text-blue-200');
+                alertIcon.className = 'fa-solid fa-circle-info text-blue-400 text-xl';
+            }
+
+            alertMsg.textContent = message;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideAlert() {
+            document.getElementById('alert-box').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
